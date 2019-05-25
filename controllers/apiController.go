@@ -22,7 +22,7 @@ func jsonResponse(w http.ResponseWriter, res interface{}) {
 
 func jsonErrorResponse(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusInternalServerError)
 	res := struct {
 		Message string `json:"message"`
 	}{
@@ -72,19 +72,17 @@ func searchAnalize(host string) (models.HostInfo, error) {
 }
 
 func Search(w http.ResponseWriter, r *http.Request) {
-	hostInfoRepository := repositories.HostInfoRepository()
-	serverInfoRepository := repositories.ServerInfoRepository()
-
+	repository := repositories.New()
 	host := r.URL.Query().Get("host")
 
-	hostInfo, err := hostInfoRepository.DetailHostInfo(host)
+	hostInfo, err := repository.DetailHostInfo(host)
 
 	if err == nil {
 		if hostInfo.Host == "" {
 			hostInfo, err = searchAnalize(host)
 
 			if err == nil {
-				err = serverInfoRepository.CreateHostInfo(&hostInfo)
+				err = repository.CreateHostInfo(&hostInfo)
 			}
 		} else {
 			duration := time.Since(hostInfo.LastChecked)
@@ -94,7 +92,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 				hostInfoUpdated, err = searchAnalize(host)
 
 				if err == nil {
-					err = hostInfoRepository.CheckHostInfo(hostInfo, &hostInfoUpdated)
+					err = repository.CheckHostInfo(hostInfo, &hostInfoUpdated)
 
 					if err == nil {
 						hostInfo = hostInfoUpdated
@@ -112,9 +110,9 @@ func Search(w http.ResponseWriter, r *http.Request) {
 }
 
 func History(w http.ResponseWriter, r *http.Request) {
-	hostInfoRepository := repositories.HostInfoRepository()
+	repository := repositories.New()
 
-	hostInfos, err := hostInfoRepository.ListHostInfo()
+	hostInfos, err := repository.ListHostInfo()
 
 	if err != nil {
 		jsonErrorResponse(w, err)
