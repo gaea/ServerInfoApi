@@ -71,9 +71,9 @@ func searchAnalize(host string) (models.HostInfo, error) {
 	return hostInfo, nil
 }
 
-func Search(w http.ResponseWriter, r *http.Request) {
+func Analize(w http.ResponseWriter, r *http.Request) {
 	repository := repositories.New()
-	host := r.URL.Query().Get("host")
+	host := r.URL.Query().Get("domain")
 
 	hostInfo, err := repository.DetailHostInfo(host)
 
@@ -125,4 +125,18 @@ func History(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, hostInfoItems)
+}
+
+func HostDetail(w http.ResponseWriter, r *http.Request) {
+	repository := repositories.New()
+	host := r.URL.Query().Get("domain")
+	var hostInfo models.HostInfo
+
+	hostInfo, err := repository.DetailHostInfo(host)
+
+	if err != nil {
+		jsonErrorResponse(w, err)
+	}
+
+	jsonResponse(w, hostInfo)
 }

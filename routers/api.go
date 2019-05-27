@@ -7,6 +7,7 @@ import (
 )
 
 func AnalizeServerApi(router chi.Router) {
-	router.Get("/servers", controllers.Search)
+	router.Get("/analize", controllers.Analize)
 	router.Get("/searchhistory", controllers.History)
+	router.Get("/detail", controllers.HostDetail)
 }
